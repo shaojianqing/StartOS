@@ -27,6 +27,9 @@ APPLICATIONSTART = 0x0000
 IMAGETOOL = java -jar ImageTool.jar
 
 # The copy binary data command #
+CREATEIMAGE = createImage
+
+# The copy binary data command #
 COPYBINARY = copyBinary
 
 # The trim elf file header command #
@@ -47,11 +50,29 @@ BOOT = tgt/boot.bin
 #Loader Target#
 LOADER = tgt/loader.bin
 
-#Public Object#
-PUBLICOBJS = tgt/public.o
+#System Object#
+SYSTEM = tgt/system.o
+
+#Descriptor Object#
+DESCRIPTOR = tgt/descriptor.o
 
 #Interrupt Object#
-INTERRUPTOBJS = tgt/interrupta.o tgt/interruptc.o 
+INTERRUPTOBJS = tgt/interrupt.o 
+
+#Timing Object#
+TIMINGOBJS = tgt/timea.o tgt/timec.o
+
+#Keyboard Object#
+KEYBOARDOBJS = tgt/keyboarda.o tgt/keyboardc.o
+
+#Harddisk Object#
+HARDDISKOBJS = tgt/harddiska.o tgt/harddiskc.o
+
+#Interface Object#
+INTERFACEOBJS = tgt/interfacea.o tgt/interfacec.o
+
+#FileSys Object#
+FILESYSOBJS = tgt/filesysa.o tgt/filesysc.o
 
 #Kernel Target#
 KERNEL = tgt/kernel.sys
@@ -73,25 +94,64 @@ rmfiles :
 	 rm -f $(TGT)
 
 #---------------------------------------------------------------#
-tgt/boot.bin : src/boot/boot.asm
+tgt/boot.bin : src/boot/boot.s
 	$(AS) $< -o $@
 
 #---------------------------------------------------------------#
-tgt/loader.bin : src/boot/loader.asm src/boot/structure.inc
+tgt/loader.bin : src/boot/loader.s src/boot/structure.inc
 	$(AS) $< -o $@
 
-tgt/public.o : src/kernel/public/public.asm
+#---------------------------------------------------------------#
+tgt/system.o : src/kernel/system/system.s
+	$(AS) $(ELFFLAGES) $< -o $@
+
+tgt/descriptor.o : src/kernel/system/descriptor.c src/kernel/system/descriptor.h
+	$(CC) $(CCFLAGES) $< -o $@
+
+tgt/interrupt.o  : src/kernel/system/interrupt.c src/kernel/system/interrupt.h
+	$(CC) $(CCFLAGES) $< -o $@
+
+#---------------------------------------------------------------#
+tgt/timea.o : src/kernel/time/time.s
+	$(AS) $(ELFFLAGES) $< -o $@
+
+tgt/timec.o : src/kernel/time/time.c src/kernel/time/time.h
+	$(CC) $(CCFLAGES) $< -o $@
+
+tgt/keyboarda.o : src/kernel/keyboard/keyboard.s
+	$(AS) $(ELFFLAGES) $< -o $@
+
+tgt/keyboardc.o : src/kernel/keyboard/keyboard.c src/kernel/keyboard/keyboard.h
+	$(CC) $(CCFLAGES) $< -o $@
+
+tgt/harddiska.o : src/kernel/harddisk/harddisk.s
+	$(AS) $(ELFFLAGES) $< -o $@
+
+tgt/harddiskc.o : src/kernel/harddisk/harddisk.c src/kernel/harddisk/harddisk.h
+	$(CC) $(CCFLAGES) $< -o $@
+
+#---------------------------------------------------------------#
+tgt/interfacec.o : src/kernel/interface/interface.c src/kernel/interface/interface.h
+	$(CC) $(CCFLAGES) $< -o $@
+
+tgt/interfacea.o : src/kernel/interface/interface.s
+	$(AS) $(ELFFLAGES) $< -o $@
+
+tgt/filesysc.o : src/kernel/library/filesys.c src/kernel/library/filesys.h
+	$(CC) $(CCFLAGES) $< -o $@
+
+tgt/filesysa.o : src/kernel/library/filesys.s
 	$(AS) $(ELFFLAGES) $< -o $@
 
 #---------------------------------------------------------------#
-tgt/ka.o : src/kernel/kernel.asm
+tgt/ka.o : src/kernel/kernel.s
 	$(AS) $(ELFFLAGES) $< -o $@
 
 tgt/kc.o : src/kernel/kernel.c
 	$(CC) $(CCFLAGES) $< -o $@
 
-tgt/kernel.bin : $(KERNELOBJS) $(PUBLICOBJS)
-	$(LD) $(LDFLAGES) $(KERNELSTART) $(KERNELOBJS) $(PUBLICOBJS) -o $@
+tgt/kernel.bin : $(KERNELOBJS) $(SYSTEM) $(DESCRIPTOR) $(INTERRUPTOBJS) $(TIMINGOBJS) $(KEYBOARDOBJS) $(HARDDISKOBJS) $(INTERFACEOBJS) $(FILESYSOBJS)
+	$(LD) $(LDFLAGES) $(KERNELSTART) $(KERNELOBJS) $(SYSTEM) $(DESCRIPTOR) $(INTERRUPTOBJS) $(TIMINGOBJS) $(KEYBOARDOBJS) $(HARDDISKOBJS) $(INTERFACEOBJS) $(FILESYSOBJS) -o $@
 
 tgt/kernel.sys : $(KERNELBIN)
 	$(TRIMELFHEADER) $< $@

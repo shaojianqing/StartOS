@@ -1,14 +1,13 @@
 #include "const/const.h"
+#include "time/time.h"
+#include "system/interrupt.h"
+#include "interface/interface.h"
 
 void initSystem(void)
 {
-	char *buffer = (char *)0xb8000;
+	initTimingFacility();
+	initInterruptHandler();
+	initSystemInterface();
 
-	*buffer = 'K';
-	*(buffer+1) = 0x09;
-
-
-	while(TRUE)	{
-
-	}
+	asm volatile ("hlt");
 }

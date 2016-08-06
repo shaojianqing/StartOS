@@ -1,0 +1,4 @@
+SYSTEM_ENTRY		equ			0x80
+
+INDEX_OPEN			equ 		0x00
+INDEX_CLOSE			equ 		0x01
