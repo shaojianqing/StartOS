@@ -1,7 +1,11 @@
 
-LOADER_START           equ               0x0000
+LOADER_START           	equ               	0x0000
 
-LOADER_SEGMENT         equ               0x1860	   
+LOADER_SEGMENT         	equ             	0x1860
+
+KERNEL_START			equ	 			  	0x8000
+
+ROOT_DEV 				equ 				0x0306
 	
 	[bits 16]
 
@@ -11,28 +15,67 @@ LOADER_SEGMENT         equ               0x1860
 	db 'Has Time Sharing Process Management Method And Other Features!'	 
 
 start:
-	mov ax, 0x7c0
-	mov ds, ax
-	mov byte [packageSize], 0x10
-	mov byte [reserveByte], 0x00
-	mov word [blockCount], 0x48
-	mov word [bufferOffs], 0x00
-	mov word [bufferSegm], 0x1860
-	mov dword [blockNum], 0x01
 
-	mov ah, 0x42
-	mov dl, 0x80
-	mov si, packageSize
-	int 0x13
+load_loader:
+	mov ah, 0x02
+    mov al, 0x04
+    mov ch, 0x00
+    mov cl, 0x02
+    mov dh, 0x00
+    mov dl, 0x00
+    mov bx, LOADER_SEGMENT
+    mov es, bx
+    xor bx, bx
+    int 0x13
+    jnc prepare
+    mov	dx,0x00
+	mov	ax,0x00
+	int	0x13
+	jmp	load_loader
 
-	jmp LOADER_SEGMENT : LOADER_START  
+prepare:
+	mov bx, 0x7c0
+	mov ds, bx
+	mov bx, KERNEL_START
+    mov es, bx
+    xor bx, bx
 
-packageSize: db 0
-reserveByte: db 0
-blockCount:  dw 0
-bufferOffs:  dw 0
-bufferSegm:  dw 0
-blockNum:    dq 0
+load_kernel1:
+	mov ah, 0x02
+    mov al, 0x12
+    mov ch, 0x00
+    mov cl, 0x01
+    mov dh, 0x01
+    mov dl, 0x00
+    int	0x13
+    jnc load_kernel2
+    mov dx,0x00
+    mov ax,0x00
+    int 0x13
+    jmp load_kernel1
+
+load_kernel2:
+    add bx, 9*1024
+	mov ah, 0x02
+    mov al, 0x12
+    mov ch, 0x01
+    mov cl, 0x01
+    mov dh, 0x00
+    mov dl, 0x00
+    int	0x13
+    jnc stop_motor
+    mov dx,0x00
+    mov ax,0x00
+    int 0x13
+    jmp load_kernel2
+
+stop_motor:
+    mov dx,0x3f2
+	mov al,0x00
+	out dx, al
+
+	jmp LOADER_SEGMENT : LOADER_START
  
-times 510-($-$$) db 0
+times 508-($-$$) db 0
+	dw ROOT_DEV
 	db 0x55,0xaa

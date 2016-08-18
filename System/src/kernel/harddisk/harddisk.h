@@ -38,3 +38,58 @@
 #define		STATUS_CORR		0x04
 #define		STATUS_IDX		0x02
 #define		STATUS_ERR		0x01
+
+#define 	MAX_ERRORS		0x07
+#define 	MAX_HD			0x02
+
+#define 	BIOS_ADDRESS	0x21400
+
+typedef struct Partition {
+
+	u8 bootInd;	
+
+	u8 head;	
+
+	u8 sector;	
+
+	u8 cyl;		
+
+	u8 sysInd;	
+
+	u8 endHead;
+
+	u8 endSector;
+
+	u8 endCyl;	
+
+	u32 startSect;
+
+	u32 sectCount;
+	
+} Partition;
+
+typedef struct HarddiskInfo {
+
+	int head;
+
+	int sect;
+
+	int cyl;
+
+	int wpcom;
+
+	int lzone;
+
+	int ctl;
+
+} HarddiskInfo;
+
+typedef struct Harddisk {
+
+	long startSector;
+
+	long sectorCount;
+
+} Harddisk;
+
+void initHarddiskSetting();

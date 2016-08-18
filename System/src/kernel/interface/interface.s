@@ -25,7 +25,9 @@ systemIntface:
 	pop ebx
 	pop ecx
 	pop edx
+
 	pop fs
 	pop es
-	pop ds		
+	pop ds
+			
 	iretd

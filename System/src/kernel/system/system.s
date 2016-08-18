@@ -4,6 +4,7 @@ global inByte
 global loadTr
 global outByte
 global initPic
+global memcopy
 global loadGdtr
 global loadIdtr
 global readPort
@@ -122,4 +123,22 @@ readPort:
 ; Perform the hlt operation.
 startHlt:
 	hlt
+	ret
+
+; Perform the memcopy operation
+memcopy:
+	mov edi, [esp+4]
+	mov esi, [esp+8]
+	mov ecx, [esp+12]
+
+	push es
+	push eax
+	mov ax, ds
+	mov es, ax
+	cld
+	rep
+	movsb
+
+	pop eax
+	pop es
 	ret

@@ -59,28 +59,6 @@ typedef struct GateDescriptor
 } GateDescriptor;
 
 /* 
- * Load the base and limit of GDT table into the GDTR register.
- *
- * Parameters:
- * 		limit: the limit of the GDT table.
- *		 addr: the base address of the GDT table.
- * Return:
- *		no return value.
- */
-void loadGdtr(int limit, int addr);
-
-/* 
- * Load the base and limit of IDT table into the IDTR register.
- *
- * Parameters:
- * 		limit: the limit of the IDT table.
- *		 addr: the base address of the IDT table.
- * Return:
- *		no return value.
- */
-void loadIdtr(int limit, int addr);
-
-/* 
  * Build and set the particiular GDT item into the GDT table.
  *
  * Parameters:

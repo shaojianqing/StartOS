@@ -4,6 +4,11 @@
 typedef unsigned char bool;
 
 /*
+ * Definition of byte type;
+ */
+typedef unsigned char byte;
+
+/*
  * Definition of u8 type;
  */
 typedef unsigned char u8;
