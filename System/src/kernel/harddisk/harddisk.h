@@ -21,7 +21,7 @@
 #define 	REG_LBA_HIGH	0x1F5
 #define 	REG_DEVICE		0x1F6
 #define 	REG_STATUS		0x1F7
-#define 	REG_CMD			REG_STATUS
+#define 	REG_COMMAND		REG_STATUS
 #define 	REG_DEV_CTRL	0x3F6
 #define 	REG_ALT_STATUS	REG_DEV_CTRL
 #define 	REG_DRV_ADDR	0x3F7
@@ -30,29 +30,50 @@
  * The constants of harddisk port status.The function can get the running infomation
  * of the harddisk by comparing with the status constants listed below.
  */
-#define		STATUS_BSY		0x80
-#define		STATUS_DRDY		0x40
-#define		STATUS_DFSE		0x20
-#define		STATUS_DSC		0x10
-#define		STATUS_DRQ		0x08
-#define		STATUS_CORR		0x04
-#define		STATUS_IDX		0x02
-#define		STATUS_ERR		0x01
+#define		STATUS_BSY			0x80
+#define		STATUS_DRDY			0x40
+#define		STATUS_DFSE			0x20
+#define		STATUS_DSC			0x10
+#define		STATUS_DRQ			0x08
+#define		STATUS_CORR			0x04
+#define		STATUS_IDX			0x02
+#define		STATUS_ERR			0x01
 
-#define 	MAX_ERRORS		0x07
-#define 	MAX_HD			0x02
+#define 	ERR_STAT			0x01
+#define 	INDEX_STAT			0x02
+#define 	ECC_STAT			0x04	/* Corrected error */
+#define 	DRQ_STAT			0x08
+#define 	SEEK_STAT			0x10
+#define 	WRERR_STAT			0x20
+#define 	READY_STAT			0x40
+#define 	BUSY_STAT			0x80
 
-#define 	BIOS_ADDRESS	0x21400
+#define 	WIN_RESTORE			0x10
+#define 	WIN_READ			0x20
+#define 	WIN_WRITE			0x30
+#define 	WIN_VERIFY			0x40
+#define 	WIN_FORMAT			0x50
+#define 	WIN_INIT			0x60
+#define 	WIN_SEEK 			0x70
+#define 	WIN_DIAGNOSE		0x90
+#define 	WIN_SPECIFY			0x91
+
+#define 	MAX_ERRORS			0x07
+#define 	MAX_HD				0x05
+
+#define 	BIOS_ADDRESS		0x21400
+
+#define 	DEVICE_HARD_DISK	0x03
 
 typedef struct Partition {
 
 	u8 bootInd;	
 
-	u8 head;	
+	u8 startHead;	
 
-	u8 sector;	
+	u8 startSector;	
 
-	u8 cyl;		
+	u8 startCyl;		
 
 	u8 sysInd;	
 
@@ -74,7 +95,7 @@ typedef struct HarddiskInfo {
 
 	int sect;
 
-	int cyl;
+	int cylinder;
 
 	int wpcom;
 
@@ -91,5 +112,7 @@ typedef struct Harddisk {
 	long sectorCount;
 
 } Harddisk;
+
+typedef void (*HarddiskHandler)();
 
 void initHarddiskSetting();

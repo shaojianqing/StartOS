@@ -14,7 +14,7 @@
 
 typedef struct CacheData CacheData;
 
-typedef struct CacheData {
+struct CacheData {
 
 	byte *data;				/* pointer to data block (1024 bytes) */
 
@@ -40,6 +40,6 @@ typedef struct CacheData {
 
 	CacheData *nextFree;
 
-} CacheData;
+};
 
 void initSystemCache();

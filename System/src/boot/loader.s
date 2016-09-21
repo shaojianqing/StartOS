@@ -47,9 +47,8 @@ enter_protect_mode:
 	lds	si,	[4*0x41]
 	mov	ax, 0x2140
 	mov	es, ax
-	mov	di, 0x10
+	mov	di, 0x00
 	mov	cx, 0x10
-	cld
 	rep
 	movsb
 

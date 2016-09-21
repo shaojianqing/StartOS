@@ -1,6 +1,7 @@
 #include "../const/const.h"
 #include "../type/type.h"
 #include "../library/filesys.h"
+#include "../charset/charset.h"
 #include "keyboard.h"
 
 int i=0;
@@ -18,6 +19,5 @@ void intKeyboardHandler()
 	//*(buffer+1) = 0x09; 
 
 	int status = close('G');
-
 
 }

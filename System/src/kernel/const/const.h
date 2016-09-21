@@ -52,6 +52,13 @@
 
 #define SECTOR_SIZE				512
 
+#define VRAM_ADDRESS			0xB8000
+
+#define SCREEN_WIDTH			80
+#define SCREEN_HEIGHT			25
+
+
+
 
 
 

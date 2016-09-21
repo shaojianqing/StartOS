@@ -7,7 +7,7 @@
 #include "../filesys/block.h"
 #include "ramdisk.h"
 
-extern BlockDevice blockDevice[BLOCK_DEVICE_SIZE];
+extern BlockDevice blockDeviceList[BLOCK_DEVICE_SIZE];
 
 static void doRamdiskRequest();
 
@@ -15,22 +15,22 @@ void initRamdiskSetting() {
 	int	i = 0;
 	byte *data = (byte *)START_RAMDISK;
 
-	blockDevice[RAMDISK_DEV].requestHandler = doRamdiskRequest;
+	blockDeviceList[DEVICE_RAMDISK].requestHandler = doRamdiskRequest;
 	for (i=0;i<RAMDISK_SIZE;++i) {
 		*data++ = 0x00;
 	}	
 }
 
 static void doRamdiskRequest() {
-	Request *request = &(blockDevice[RAMDISK_DEV].currentRequest);
+	Request *request = &(blockDeviceList[DEVICE_RAMDISK].currentRequest);
 	if (request!=NULL) {
-		byte *address = (byte *)(START_RAMDISK + (request->sector<<9));
+		byte *address = (byte *)(START_RAMDISK + (request->startSector<<9));
 		u32 length = (request->sectorCount<<9);
 
-		if (MINOR(request->dev)==1 && ((u32)(address+length))<RAMDISK_LIMIT) {
-			if (request->cmd==READ) {
+		if (MINOR(request->device)==1 && ((u32)(address+length))<RAMDISK_LIMIT) {
+			if (request->command==READ) {
 				memcopy(request->buffer, address, length);
-			} else if (request->cmd==WRITE) {
+			} else if (request->command==WRITE) {
 				memcopy(address, request->buffer, length);
 			} else {
 				printk("unknown ramdisk-command\n");

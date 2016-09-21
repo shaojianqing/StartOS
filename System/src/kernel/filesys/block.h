@@ -17,15 +17,15 @@
 
 typedef struct Request Request;
 
-typedef struct Request {
+struct Request {
 
-	int dev;	
+	int device;	
 
-	int cmd;	
+	int command;	
 
 	int errors;
 
-	u64 sector;
+	u64 startSector;
 
 	u64 sectorCount;
 
@@ -36,8 +36,7 @@ typedef struct Request {
 	CacheData *cacheData;
 
 	Request *next;
-
-} Request;
+};
 
 typedef struct BlockDevice {
 
@@ -46,3 +45,9 @@ typedef struct BlockDevice {
 	Request currentRequest;
 
 } BlockDevice;
+
+void initBlockDevice();
+
+void readLowLevelBlock(CacheData *cacheData);
+
+void writeLowLevelBlock(CacheData *cacheData);
