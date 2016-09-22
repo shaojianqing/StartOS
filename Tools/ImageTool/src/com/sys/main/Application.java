@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Application {
-
+	
 	private final static String CREATE_IMAGE = "createImage";
 	
 	private final static String COPY_BINARY = "copyBinary";
@@ -20,8 +20,6 @@ public class Application {
 	
 	private final static String BUILD_CHARSET = "buildCharSet";
 	
-	private final static String TRIM_ELF_HEADER = "trimElfHeader";
-	
 	private final static String FILL_BYTE_CONTENT = "fillByteContent";
 	
 	private final static int BMP_HEADER_OFFSET = 54;
@@ -29,8 +27,6 @@ public class Application {
 	private final static int IMG_HEADER_OFFSET = 8;
 	
 	private final static int SECTOR_BYTE_SIZE = 512;
-	
-	private final static int ELF_HEADER_OFFSET = 0x400;
 	
 	private static FileOutputStream fileOutput;
 	
@@ -51,8 +47,6 @@ public class Application {
 					convertImage(args, currentDir);
 				} else if (BUILD_CHARSET.equals(command)) {
 					buildCharset(args, currentDir);
-				} else if (TRIM_ELF_HEADER.equals(command)) {
-					trimElfHeader(args, currentDir);
 				} else if (FILL_BYTE_CONTENT.equals(command)) {
 					fillByteContent(args, currentDir);
 				}
@@ -62,6 +56,30 @@ public class Application {
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.out.println("Error: Parameter Is Invalid----->main!");
+		}
+	}
+	
+	private static void createImage(String[] args, String currentDir) throws IOException, FileNotFoundException {
+		if (args.length == 3) { 
+			String name = args[1];
+			String sizeStr = args[2];
+			int size = Integer.valueOf(sizeStr);
+			byte data[] = new byte[size];
+			File file = new File(currentDir, name);
+			if (!file.exists()) {
+				if (file.createNewFile()) {
+					fileOutput = new FileOutputStream(file);
+					fileOutput.write(data);
+					
+					fileOutput.close();
+				} else {
+					System.out.println("Error: Fail to create File!");
+				}
+			} else {
+				System.out.println("Error: File has existed!");
+			}
+		} else {
+			System.out.println("Error: Parameters Is Invalid----->createImage!");
 		}
 	}
 
@@ -99,31 +117,7 @@ public class Application {
 		} else {
 			System.out.println("Error: Parameters Is Invalid----->copyBinary!");
 		}
-	}
-
-	private static void createImage(String[] args, String currentDir) throws IOException, FileNotFoundException {
-		if (args.length == 3) { 
-			String name = args[1];
-			String sizeStr = args[2];
-			int size = Integer.valueOf(sizeStr);
-			byte data[] = new byte[size];
-			File file = new File(currentDir, name);
-			if (!file.exists()) {
-				if (file.createNewFile()) {
-					fileOutput = new FileOutputStream(file);
-					fileOutput.write(data);
-					
-					fileOutput.close();
-				} else {
-					System.out.println("Error: Fail to create File!");
-				}
-			} else {
-				System.out.println("Error: File has existed!");
-			}
-		} else {
-			System.out.println("Error: Parameters Is Invalid----->createImage!");
-		}
-	}
+	}	
 	
 	private static void convertImage(String[] args, String currentDir) throws IOException, FileNotFoundException {
 		if (args.length == 6) {
@@ -198,35 +192,10 @@ public class Application {
 					byteArray[i] = dataList.get(i);
 				}
 				fileOutput.write(byteArray);
+				reader.close();
 			}			
 		} else {
 			System.out.println("Error: Parameters Is Invalid----->buildCharset!");
-		}
-	}
-	
-	private static void trimElfHeader(String[] args, String currentDir) throws IOException, FileNotFoundException {
-		if (args.length == 3) {
-			String source = args[1];
-			String target = args[2];
-			
-			File sourceFile = new File(currentDir, source);
-			File targetFile = new File(currentDir, target);
-			if (sourceFile.exists() && !targetFile.exists() && targetFile.createNewFile()) {
-				sourceInput = new FileInputStream(sourceFile);
-				fileOutput = new FileOutputStream(targetFile);
-				
-				int sourceSize = sourceInput.available();
-				int targetSize = sourceSize - ELF_HEADER_OFFSET;
-				byte[] sourceData = new byte[sourceSize];
-				byte[] targetData = new byte[targetSize];
-				sourceInput.read(sourceData);
-				for (int i=ELF_HEADER_OFFSET;i<sourceSize;++i) {
-					targetData[i - ELF_HEADER_OFFSET] = sourceData[i];
-				}
-				fileOutput.write(targetData);
-			}			
-		} else {
-			System.out.println("Error: Parameters Is Invalid----->trimElfHeader!");
 		}
 	}
 	
