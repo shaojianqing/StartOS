@@ -71,7 +71,10 @@ KEYBOARDOBJS = tgt/keyboarda.o tgt/keyboardc.o
 HARDDISKOBJS = tgt/harddiska.o tgt/harddiskc.o
 
 #Ramdisk Object#
-RAMDISKOBJS = tgt/ramdisk.o 
+RAMDISKOBJS = tgt/ramdisk.o
+
+#Console Object#
+CONSOLEOBJS = tgt/console.o 
 
 #FileSystem Object#
 FILESYSTEMOBJS = tgt/filesystem.o
@@ -215,14 +218,18 @@ tgt/filesysa.o : src/kernel/library/filesys.s
 	$(AS) $(ELFFLAGES) $< -o $@
 
 #---------------------------------------------------------------#
+tgt/console.o : src/kernel/console/console.c
+	$(CC) $(CCFLAGES) $< -o $@
+
+#---------------------------------------------------------------#
 tgt/ka.o : src/kernel/kernel.s
 	$(AS) $(ELFFLAGES) $< -o $@
 
 tgt/kc.o : src/kernel/kernel.c
 	$(CC) $(CCFLAGES) $< -o $@
 
-tgt/kernel.bin : $(KERNELOBJS) $(SYSTEM) $(DESCRIPTOR) $(INTERRUPTOBJS) $(TIMINGOBJS) $(KEYBOARDOBJS) $(HARDDISKOBJS) $(INTERFACEOBJS) $(FILESYSOBJS) $(FILESYSTEMOBJS) $(NAMEIOBJS) $(DATAOBJS) $(PIPEOBJS) $(PROCESSOBJS) $(CACHEOBJS) $(STATOBJS) $(BLOCKOBJS) $(RAMDISKOBJS) $(CHARSETOBJS)
-	$(LD) $(LDFLAGES) $(KERNELSTART) $(KERNELOBJS) $(SYSTEM) $(DESCRIPTOR) $(INTERRUPTOBJS) $(TIMINGOBJS) $(KEYBOARDOBJS) $(HARDDISKOBJS) $(INTERFACEOBJS) $(FILESYSOBJS) $(FILESYSTEMOBJS) $(NAMEIOBJS) $(DATAOBJS) $(PIPEOBJS) $(PROCESSOBJS) $(CACHEOBJS) $(STATOBJS) $(BLOCKOBJS) $(RAMDISKOBJS) $(CHARSETOBJS) -o $@
+tgt/kernel.bin : $(KERNELOBJS) $(SYSTEM) $(DESCRIPTOR) $(INTERRUPTOBJS) $(TIMINGOBJS) $(KEYBOARDOBJS) $(HARDDISKOBJS) $(INTERFACEOBJS) $(FILESYSOBJS) $(FILESYSTEMOBJS) $(NAMEIOBJS) $(DATAOBJS) $(PIPEOBJS) $(PROCESSOBJS) $(CACHEOBJS) $(STATOBJS) $(BLOCKOBJS) $(RAMDISKOBJS) $(CHARSETOBJS) $(CONSOLEOBJS)
+	$(LD) $(LDFLAGES) $(KERNELSTART) $(KERNELOBJS) $(SYSTEM) $(DESCRIPTOR) $(INTERRUPTOBJS) $(TIMINGOBJS) $(KEYBOARDOBJS) $(HARDDISKOBJS) $(INTERFACEOBJS) $(FILESYSOBJS) $(FILESYSTEMOBJS) $(NAMEIOBJS) $(DATAOBJS) $(PIPEOBJS) $(PROCESSOBJS) $(CACHEOBJS) $(STATOBJS) $(BLOCKOBJS) $(RAMDISKOBJS) $(CHARSETOBJS) $(CONSOLEOBJS) -o $@
 
 tgt/kernel.sys : $(KERNELBIN)
 	$(TRIMELFHEADER) $< $@
