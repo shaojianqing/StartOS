@@ -3,9 +3,9 @@
 #include "../charset/charset.h"
 #include "time.h"
 
-int systemTiming = 0;
+volatile long long systemTiming = 0;
 
-int systemClock = 40;
+volatile int systemClock = 40;
 
 void initTimingFacility() {
 	outByte(PIT_CTRL, 0x34);
@@ -15,9 +15,9 @@ void initTimingFacility() {
 
 void intTimeHandler() {
 	outByte(PIC0_OCW2, 0x60);
-
-	byte *buffer = (byte *)0xb8008;
 	systemTiming++;
+
+	
 
 	//printInteger(10, 4, systemTiming, 0x07);
 
@@ -34,3 +34,9 @@ void intTimeHandler() {
 	}
 	systemClock--;*/
 }
+
+long long getSystemTiming() {
+	return systemTiming;
+}
+
+

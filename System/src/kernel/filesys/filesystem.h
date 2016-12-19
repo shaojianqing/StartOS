@@ -1,4 +1,5 @@
-#define BLOCK_SIZE				1024
+
+#define BLOCK_DATA_SIZE					1024
 
 typedef struct MInode {
 

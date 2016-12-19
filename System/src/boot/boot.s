@@ -1,11 +1,11 @@
 
-LOADER_START           	equ               	0x0000
+LOADER_START           	equ               0x0000
 
 LOADER_SEGMENT         	equ             	0x1860
 
-KERNEL_START			equ	 			  	0x8000
+KERNEL_START						equ	 			  			0x8000
 
-ROOT_DEV 				equ 				0x0306
+ROOT_DEV 								equ 							0x0306
 	
 	[bits 16]
 

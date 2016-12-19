@@ -1,6 +1,6 @@
 #define START_CACHE			(1*1024*1024)
 
-#define CACHE_LIMIT			(5*1024*1024)
+#define CACHE_LIMIT			(4*1024*1024)
 
 #define CACHE_HASH_SIZE		307
 
@@ -11,6 +11,8 @@
 #define READA 				0x02
 
 #define WRITEA 				0x03
+
+#define BADNESS(cacheData) (((cacheData)->isDirty<<1)+(cacheData)->isLock)
 
 typedef struct CacheData CacheData;
 
@@ -39,7 +41,10 @@ struct CacheData {
 	CacheData *prevFree;
 
 	CacheData *nextFree;
-
 };
 
 void initSystemCache();
+
+CacheData *readBlock(int dev, int block);
+
+void releaseBlock(CacheData *cacheData);

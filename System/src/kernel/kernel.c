@@ -12,37 +12,41 @@
 
 extern Console *console;
 
-int video_port_reg	= 0x3d4;
-
-int	video_port_val	= 0x3d5; 
-
-int video_mem_start = 0xb8000;
-
-int pos = 0xb8020;
-
-
-static void set_cursor(void)
-{
-    clearInterrupt();
-    outByte(14, video_port_reg);
-    outByte(0xff&((pos-video_mem_start)>>9), video_port_val);
-    outByte(15, video_port_reg);
-    outByte(0xff&((pos-video_mem_start)>>1), video_port_val);
-    setupInterrupt();
-}
-
 void initSystem(void)
 {
 	initBlockDevice();
 	initSystemCache();
+	initMemorySetting();
 	initTimingFacility();
 	initConsoleSetting();
 	initRamdiskSetting();
 	initHarddiskSetting();
 	initSystemInterface();
 	initInterruptHandler();
+	setupInterrupt();
 
-	console->print(console, "shaojian\nqing", 13);
+	console->print(console, "shaojianqing\n", 13);
+
+	/*byte *area0 = (byte *)allocatePage();
+	byte *area1 = (byte *)allocatePage();
+	byte *area2 = (byte *)allocatePage();
+	byte *area3 = (byte *)allocatePage();
+	byte *area4 = (byte *)allocatePage();
+	byte *area5 = (byte *)allocatePage();
+	byte *area6 = (byte *)allocatePage();
+	byte *area7 = (byte *)allocatePage();
+	byte *area8 = (byte *)allocatePage();
+	byte *area9 = (byte *)allocatePage();
+	byte *area10 = (byte *)allocatePage();
+	byte *area11 = (byte *)allocatePage();
+
+	releasePage((u32)area4);
+	releasePage((u32)area2);
+
+	releasePage((u32)area9);
+
+	releasePage((u32)area10);*/
+
 
 	CacheData *cacheData = (CacheData *)START_CACHE;
 	cacheData->device = 0x00;

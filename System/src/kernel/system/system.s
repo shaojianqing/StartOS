@@ -43,10 +43,8 @@ initPic:
     mov al, 11111000B
     out 0x21, al
 
-    mov al, 11101111B
+    mov al, 10101111B
     out 0xa1, al
-
-	sti
 
     ret
 

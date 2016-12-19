@@ -46,6 +46,10 @@ EMPTY = Empty.vhd
 
 TARGET = System.img
 
+DISK = System.vhd
+
+DATA = data.text
+
 #Booter Target#
 BOOT = tgt/boot.bin
 
@@ -102,6 +106,9 @@ SIGNALOBJS = tgt/signal.o
 
 #Process Object#
 PROCESSOBJS = tgt/process.o
+
+#Memory Object#
+MEMORYOBJS = tgt/memory.o
 
 #Interface Object#
 INTERFACEOBJS = tgt/interfacea.o tgt/interfacec.o
@@ -201,6 +208,9 @@ tgt/cache.o : src/kernel/filesys/cache.c src/kernel/filesys/cache.h
 tgt/process.o : src/kernel/process/process.c src/kernel/process/process.h
 	$(CC) $(CCFLAGES) $< -o $@
 
+tgt/memory.o : src/kernel/memory/memory.c src/kernel/memory/memory.h
+	$(CC) $(CCFLAGES) $< -o $@
+
 tgt/block.o : src/kernel/filesys/block.c src/kernel/filesys/block.h
 	$(CC) $(CCFLAGES) $< -o $@
 
@@ -228,8 +238,8 @@ tgt/ka.o : src/kernel/kernel.s
 tgt/kc.o : src/kernel/kernel.c
 	$(CC) $(CCFLAGES) $< -o $@
 
-tgt/kernel.bin : $(KERNELOBJS) $(SYSTEM) $(DESCRIPTOR) $(INTERRUPTOBJS) $(TIMINGOBJS) $(KEYBOARDOBJS) $(HARDDISKOBJS) $(INTERFACEOBJS) $(FILESYSOBJS) $(FILESYSTEMOBJS) $(NAMEIOBJS) $(DATAOBJS) $(PIPEOBJS) $(PROCESSOBJS) $(CACHEOBJS) $(STATOBJS) $(BLOCKOBJS) $(RAMDISKOBJS) $(CHARSETOBJS) $(CONSOLEOBJS)
-	$(LD) $(LDFLAGES) $(KERNELSTART) $(KERNELOBJS) $(SYSTEM) $(DESCRIPTOR) $(INTERRUPTOBJS) $(TIMINGOBJS) $(KEYBOARDOBJS) $(HARDDISKOBJS) $(INTERFACEOBJS) $(FILESYSOBJS) $(FILESYSTEMOBJS) $(NAMEIOBJS) $(DATAOBJS) $(PIPEOBJS) $(PROCESSOBJS) $(CACHEOBJS) $(STATOBJS) $(BLOCKOBJS) $(RAMDISKOBJS) $(CHARSETOBJS) $(CONSOLEOBJS) -o $@
+tgt/kernel.bin : $(KERNELOBJS) $(SYSTEM) $(DESCRIPTOR) $(INTERRUPTOBJS) $(TIMINGOBJS) $(KEYBOARDOBJS) $(HARDDISKOBJS) $(INTERFACEOBJS) $(FILESYSOBJS) $(FILESYSTEMOBJS) $(NAMEIOBJS) $(DATAOBJS) $(PIPEOBJS) $(PROCESSOBJS) $(CACHEOBJS) $(STATOBJS) $(BLOCKOBJS) $(RAMDISKOBJS) $(CHARSETOBJS) $(CONSOLEOBJS) $(MEMORYOBJS)
+	$(LD) $(LDFLAGES) $(KERNELSTART) $(KERNELOBJS) $(SYSTEM) $(DESCRIPTOR) $(INTERRUPTOBJS) $(TIMINGOBJS) $(KEYBOARDOBJS) $(HARDDISKOBJS) $(INTERFACEOBJS) $(FILESYSOBJS) $(FILESYSTEMOBJS) $(NAMEIOBJS) $(DATAOBJS) $(PIPEOBJS) $(PROCESSOBJS) $(CACHEOBJS) $(STATOBJS) $(BLOCKOBJS) $(RAMDISKOBJS) $(CHARSETOBJS) $(CONSOLEOBJS) $(MEMORYOBJS) -o $@
 
 tgt/kernel.sys : $(KERNELBIN)
 	$(TRIMELFHEADER) $< $@
@@ -240,4 +250,6 @@ System.img : tgt/boot.bin tgt/loader.bin tgt/kernel.sys
 	$(IMAGETOOL) $(COPYBINARY) $@ $(BOOT) 0					
 	$(IMAGETOOL) $(COPYBINARY) $@ $(LOADER) 512
 	$(IMAGETOOL) $(COPYBINARY) $@ $(KERNEL) 9216
+	$(IMAGETOOL) $(COPYBINARY) $@ $(BOOT) 0
+	$(IMAGETOOL) $(COPYBINARY) $(DISK) $(DATA) 0	
 	$(RUN-SYSTEM)
