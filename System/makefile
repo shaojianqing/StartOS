@@ -44,7 +44,7 @@ TGT = tgt/*
 
 EMPTY = Empty.vhd
 
-TARGET = System.img
+TARGET = System.vhd
 
 DISK = System.vhd
 
@@ -119,6 +119,9 @@ FILESYSOBJS = tgt/filesysa.o tgt/filesysc.o
 #Block Object#
 BLOCKOBJS = tgt/block.o
 
+#Printer Object#
+PRINTEROBJS = tgt/printer.o
+
 #Kernel Target#
 KERNEL = tgt/kernel.sys
 
@@ -181,7 +184,7 @@ tgt/harddiskc.o : src/kernel/harddisk/harddisk.c src/kernel/harddisk/harddisk.h
 tgt/ramdisk.o : src/kernel/ramdisk/ramdisk.c src/kernel/ramdisk/ramdisk.h
 	$(CC) $(CCFLAGES) $< -o $@
 
-tgt/filesystem.o : src/kernel/filesys/filesystem.c src/kernel/filesys/filesystem.h
+tgt/filesystem.o : src/kernel/filesys/filesys.c src/kernel/filesys/filesys.h
 	$(CC) $(CCFLAGES) $< -o $@
 
 tgt/namei.o : src/kernel/filesys/namei.c src/kernel/filesys/namei.h
@@ -214,6 +217,9 @@ tgt/memory.o : src/kernel/memory/memory.c src/kernel/memory/memory.h
 tgt/block.o : src/kernel/filesys/block.c src/kernel/filesys/block.h
 	$(CC) $(CCFLAGES) $< -o $@
 
+tgt/filesysa.o : src/kernel/library/filesys.s
+	$(AS) $(ELFFLAGES) $< -o $@
+
 #---------------------------------------------------------------#
 tgt/interfacec.o : src/kernel/interface/interface.c src/kernel/interface/interface.h
 	$(CC) $(CCFLAGES) $< -o $@
@@ -224,7 +230,7 @@ tgt/interfacea.o : src/kernel/interface/interface.s
 tgt/filesysc.o : src/kernel/library/filesys.c src/kernel/library/filesys.h
 	$(CC) $(CCFLAGES) $< -o $@
 
-tgt/filesysa.o : src/kernel/library/filesys.s
+tgt/printer.o : src/kernel/keyboard/printer.s
 	$(AS) $(ELFFLAGES) $< -o $@
 
 #---------------------------------------------------------------#
@@ -238,18 +244,16 @@ tgt/ka.o : src/kernel/kernel.s
 tgt/kc.o : src/kernel/kernel.c
 	$(CC) $(CCFLAGES) $< -o $@
 
-tgt/kernel.bin : $(KERNELOBJS) $(SYSTEM) $(DESCRIPTOR) $(INTERRUPTOBJS) $(TIMINGOBJS) $(KEYBOARDOBJS) $(HARDDISKOBJS) $(INTERFACEOBJS) $(FILESYSOBJS) $(FILESYSTEMOBJS) $(NAMEIOBJS) $(DATAOBJS) $(PIPEOBJS) $(PROCESSOBJS) $(CACHEOBJS) $(STATOBJS) $(BLOCKOBJS) $(RAMDISKOBJS) $(CHARSETOBJS) $(CONSOLEOBJS) $(MEMORYOBJS)
-	$(LD) $(LDFLAGES) $(KERNELSTART) $(KERNELOBJS) $(SYSTEM) $(DESCRIPTOR) $(INTERRUPTOBJS) $(TIMINGOBJS) $(KEYBOARDOBJS) $(HARDDISKOBJS) $(INTERFACEOBJS) $(FILESYSOBJS) $(FILESYSTEMOBJS) $(NAMEIOBJS) $(DATAOBJS) $(PIPEOBJS) $(PROCESSOBJS) $(CACHEOBJS) $(STATOBJS) $(BLOCKOBJS) $(RAMDISKOBJS) $(CHARSETOBJS) $(CONSOLEOBJS) $(MEMORYOBJS) -o $@
+tgt/kernel.bin : $(KERNELOBJS) $(SYSTEM) $(DESCRIPTOR) $(INTERRUPTOBJS) $(TIMINGOBJS) $(KEYBOARDOBJS) $(HARDDISKOBJS) $(INTERFACEOBJS) $(FILESYSOBJS) $(FILESYSTEMOBJS) $(NAMEIOBJS) $(DATAOBJS) $(PIPEOBJS) $(PROCESSOBJS) $(CACHEOBJS) $(STATOBJS) $(BLOCKOBJS) $(RAMDISKOBJS) $(CHARSETOBJS) $(CONSOLEOBJS) $(MEMORYOBJS) $(PRINTEROBJS)
+	$(LD) $(LDFLAGES) $(KERNELSTART) $(KERNELOBJS) $(SYSTEM) $(DESCRIPTOR) $(INTERRUPTOBJS) $(TIMINGOBJS) $(KEYBOARDOBJS) $(HARDDISKOBJS) $(INTERFACEOBJS) $(FILESYSOBJS) $(FILESYSTEMOBJS) $(NAMEIOBJS) $(DATAOBJS) $(PIPEOBJS) $(PROCESSOBJS) $(CACHEOBJS) $(STATOBJS) $(BLOCKOBJS) $(RAMDISKOBJS) $(CHARSETOBJS) $(CONSOLEOBJS) $(MEMORYOBJS) $(PRINTEROBJS) -o $@
 
 tgt/kernel.sys : $(KERNELBIN)
 	$(TRIMELFHEADER) $< $@
 
 #---------------------------------------------------------------#
-System.img : tgt/boot.bin tgt/loader.bin tgt/kernel.sys
-	$(IMAGETOOL) $(CREATEIMAGE) $@ $(IMAGE_SIZE)
+System.vhd : tgt/boot.bin tgt/loader.bin tgt/kernel.sys
+	$(CP) $(EMPTY) $@
 	$(IMAGETOOL) $(COPYBINARY) $@ $(BOOT) 0					
 	$(IMAGETOOL) $(COPYBINARY) $@ $(LOADER) 512
 	$(IMAGETOOL) $(COPYBINARY) $@ $(KERNEL) 9216
-	$(IMAGETOOL) $(COPYBINARY) $@ $(BOOT) 0
-	$(IMAGETOOL) $(COPYBINARY) $(DISK) $(DATA) 0	
 	$(RUN-SYSTEM)

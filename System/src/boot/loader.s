@@ -20,8 +20,7 @@ stack:     Descriptor 0x00007e00, 0x00007e00,  DA_DRWA | DA_32      	;00011_000B
 gdt_size:  dw 0xFF
 gdt_base:  dd GDT_BASE
 
-enter_protect_mode:
-
+enter_protect_mode:         
 	;---------------GDT TABLE-----------------;
 	mov ax, 0x7e0
 	mov es, ax
@@ -33,24 +32,20 @@ enter_protect_mode:
 	mov cx, 0x20
 	rep movsb
 
-	;------------------------;
-	mov ax, 0x2140
+	;------------------------;	
+	mov ax, 0x1860
 	mov ds, ax
-	xor bx, bx
-	mov ah, 0x88
-	int 0x15
-	mov [ds:bx], ax         
+	mov byte [packageSize], 0x10
+	mov byte [reserveByte], 0x00
+	mov word [blockCount], 0x80
+	mov word [bufferOffs], 0x00
+	mov word [bufferSegm], 0x8000
+	mov dword [blockNum], 0x12
 
-	;------------------------;
-	mov	ax, 0x0000
-	mov	ds,	ax
-	lds	si,	[4*0x41]
-	mov	ax, 0x2140
-	mov	es, ax
-	mov	di, 0x00
-	mov	cx, 0x10
-	rep
-	movsb
+	mov ah, 0x42
+	mov dl, 0x80
+	mov si, packageSize
+	int 0x13
 
 	;------------------------;
  
@@ -70,4 +65,11 @@ enter_protect_mode:
 	or eax, 0x00000001
 	mov cr0, eax
 
-	jmp dword SYS_SELECTOR : KERNAL_ADDR
+	jmp dword SYS_SELECTOR : KERNAL_ADDR 
+
+packageSize: db 		0
+reserveByte: db 		0
+blockCount:  dw 		0
+bufferOffs:  dw 		0
+bufferSegm:  dw 		0
+blockNum:    dq 		0

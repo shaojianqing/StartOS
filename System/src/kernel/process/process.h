@@ -2,6 +2,8 @@
 
 #define PROCESS_NAME_LENGTH				32
 
+#define PROCESS_LIST_NUM				256
+
 typedef struct Tss
 {
 	int backlink, esp0, ss0, esp1, ss1, esp2, ss2, cr3;
@@ -45,10 +47,16 @@ typedef struct Process
 
 	int priority;
 
-	u32 index;
+	int counter;
+
+	u32 pid;
 
 	char *name;
 
 } Process;
+
+Process* createProcess(u32 entryAddress);
+
+void startProcess(Process *process);
 
 void sleepProcess(Process **process);

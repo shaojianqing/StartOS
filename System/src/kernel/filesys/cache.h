@@ -12,6 +12,8 @@
 
 #define WRITEA 				0x03
 
+#define BLOCK_SIZE			1024
+
 #define BADNESS(cacheData) (((cacheData)->isDirty<<1)+(cacheData)->isLock)
 
 typedef struct CacheData CacheData;

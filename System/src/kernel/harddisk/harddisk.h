@@ -11,6 +11,10 @@
 #define	MAKE_DEVICE_REG(lba,drv,lba_highest) (((lba) << 6) |		\
 					      ((drv) << 4) |		\
 					      (lba_highest & 0xF) | 0xA0)
+
+#define 	PARTITION_TABLE				(0x7c00+446)
+
+#define 	DEFAULT_PARTITION_COUNT		0x04
 /* 
  * The constants of harddisk identity.The function can access the IDE harddisk
  * by using the constants listed below.
@@ -51,6 +55,14 @@
 #define		STATUS_CORR		0x04
 #define		STATUS_IDX		0x02
 #define		STATUS_ERR		0x01
+
+typedef struct Partition {
+
+	u32 startSector;			/* starting sector counting from 0 */
+
+	u32 totalSectCount;			/* nr of sectors in partition */
+
+} Partition;
 
 typedef void (*HarddiskHandler)();
 

@@ -111,6 +111,8 @@ static char keymap[][2] = {
 
 int block = 0;
 
+static void printHarddiskData();
+
 void intKeyboardHandler()
 {
 
@@ -120,22 +122,8 @@ void intKeyboardHandler()
 	
 	outByte(PIC0_OCW2, 0x61);
 	u16 data = inByte(PORT_KEYDATA);
-
-	if (block<2) {
-
-		CacheData *cacheData = readBlock(1, block);
-
-
-		//cacheData->data[0] = 'A';
-		//cacheData->data[4] = 'G';
-		//cacheData->data[10] = 0;
-
-		//console->print(console, cacheData->data, 15);
-		block++;
-	}
-
 		
-	/*if (data==0xe0) {
+	if (data==0xe0) {
 		extScancode = true;
 	}
 
@@ -181,8 +169,8 @@ void intKeyboardHandler()
       u8 index = (data &= 0x00ff);
       char currentData = keymap[index][shift];
    
-      if (currentData) {
-		 console->putChar(console, currentData, 11);
+      if (currentData) {	 
+			console->putChar(console, currentData, 11);
 		 return;
       }
 
@@ -195,5 +183,19 @@ void intKeyboardHandler()
       } else if (data == caps_lock_make) {
 	 	capsLockStatus = !capsLockStatus;
       }
-   }*/
+   }
+}
+
+static void printHarddiskData() {
+	if (block<2) {
+
+		CacheData *cacheData = readBlock(0, block);
+
+		u8 *buffer = cacheData->data;
+
+		*(buffer+32) = 0;
+		console->print(console, buffer, 9);
+
+		block++;
+	}
 }

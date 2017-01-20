@@ -23,9 +23,10 @@ void initSystem(void)
 	initHarddiskSetting();
 	initSystemInterface();
 	initInterruptHandler();
+	initFileSystem();
 	setupInterrupt();
 
-	console->print(console, "shaojianqing\n", 13);
+	console->print(console, "shaojianqing", 13);
 
 	/*byte *area0 = (byte *)allocatePage();
 	byte *area1 = (byte *)allocatePage();
@@ -45,14 +46,16 @@ void initSystem(void)
 
 	releasePage((u32)area9);
 
-	releasePage((u32)area10);*/
+	releasePage((u32)area10);
 
 
 	CacheData *cacheData = (CacheData *)START_CACHE;
 	cacheData->device = 0x00;
-	readLowLevelBlock(cacheData);
+	readLowLevelBlock(cacheData);*/
 
 	while(true) {
+
+		
 		
 	}
 }

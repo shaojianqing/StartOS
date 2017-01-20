@@ -10,7 +10,7 @@ global _start
 _start:
 	mov eax, 00011000B
 	mov ss, eax
-	mov esp, 0x7e00
+	mov esp, 0x7c00
 
 	mov eax, 00010000B
 	mov ds, eax

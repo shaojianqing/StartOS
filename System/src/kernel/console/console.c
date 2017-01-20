@@ -75,7 +75,7 @@ static void clear(Console *this) {
 		}
 		this->currentX = 0;
 		this->currentY = 0;
-		
+		setCursor(0);
 	}
 }
 
@@ -107,6 +107,8 @@ static void print(Console *this, char *message, char color) {
 			}
 			i++;
 		}
+		start=this->currentY*SCREEN_WIDTH+this->currentX;
+		setCursor(start);
 	}
 }
 
@@ -134,6 +136,7 @@ static void putChar(Console *this, char c, char color) {
 				this->scrollScreen(this);					
 			}
 		}
+		setCursor(start);
 	}
 }
 

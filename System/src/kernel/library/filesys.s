@@ -30,6 +30,8 @@ open_normal:
 	pop ecx
 	pop ebx
 	pop ebp
+	mov esp, ebp
+	pop ebp
 	ret
 
 close:

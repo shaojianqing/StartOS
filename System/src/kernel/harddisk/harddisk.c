@@ -11,6 +11,10 @@
 
 extern Console *console;
 
+u32 partitionCount = DEFAULT_PARTITION_COUNT;
+
+Partition partitionTable[DEFAULT_PARTITION_COUNT];
+
 typedef struct Command
 {
     u8 features;
@@ -34,9 +38,15 @@ Command command;
 static void doHarddiskRequest();
 
 void initHarddiskSetting() {
+	int i=0;
 
-
-	//blockDeviceList[DEVICE_HARD_DISK].requestHandler = doHarddiskRequest;
+	Partition *partition = (Partition *)PARTITION_TABLE;
+	while((partition+i)->totalSectCount!=0) {
+		(partitionTable+i)->startSector = (partition+i)->startSector;
+		(partitionTable+i)->totalSectCount = (partition+i)->totalSectCount;
+		++i;
+	}
+	partitionCount = i;
 }
 
 int sys_setup() {
@@ -47,9 +57,6 @@ void intHarddiskHandler() {
 	inByte(REG_STATUS);
 	outByte(0x20, 0xA0);
 	outByte(0x20, 0x20);
-
-	console->putChar(console, 'M', 15);
-
 	return;
 }
 
@@ -115,19 +122,8 @@ void readHardDisk(u32 sector, u8 *buffer, int size)
 	}
 }
 
-void readDataBlock(CacheData *cacheData) {
-
-	console->putChar(console, 'A', 11);	
-
-	u8 *buffer = (u8 *)(5*1024*1024);
-	
-	readHardDisk(2, buffer, 1024*4);
-
-	buffer = (u8 *)(5*1024*1024);
-	
-	char c = buffer[0];
-
-	console->putChar(console, c, 9);	
+void readDataBlock(CacheData *cacheData) {	
+	readHardDisk(cacheData->block*2, cacheData->data, BLOCK_SIZE);
 }
 
 void writeDataBlock(CacheData *cacheData) {
