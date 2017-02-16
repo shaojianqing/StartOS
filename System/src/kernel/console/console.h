@@ -17,7 +17,7 @@ struct Console {
 
 	void (*scrollScreen)(Console *this);
 
-	void (*print)(Console *this, char *message, char color);
+	void (*printInfo)(const char* format, ...);
 
 	void (*putChar)(Console *this, char c, char color);
 
@@ -26,6 +26,8 @@ struct Console {
 	void (*printByte)(Console *this, byte value, char color);
 
 	void (*printInteger)(Console *this, u32 data, char color);
+
+	void (*printString)(Console *this, char *message, char color);
 };
 
 void initConsoleSetting();

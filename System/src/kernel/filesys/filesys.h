@@ -1,13 +1,21 @@
 
 #define BLOCK_DATA_SIZE					1024
 
-#define NAME_LEN 						14
+#define NUM_INDEX_NODE					256
 
-typedef struct CacheBlock {
-	
-	byte data[BLOCK_DATA_SIZE];	
+#define NAME_LENGTH 					14
 
-} CacheBlock;
+#define I_MAP_SLOTS 					8
+
+#define Z_MAP_SLOTS 					8
+
+#define INODE_NUM_PER_BLOCK 			32		//INODES_PER_BLOCK = 1024/32
+
+#define ROOT_PARTITION					1
+
+#define ROOT_DEVICE						1
+
+#define ROOT_INDEX_NODE					1
 
 typedef struct SuperBlockDisk {
 
@@ -47,9 +55,9 @@ typedef struct SuperBlock {
 
 	u16 magic;
 
-	CacheBlock *nodeMap[9];
+	CacheData *nodeMap[I_MAP_SLOTS];
 	
-	CacheBlock *zoneMap[9];	
+	CacheData *zoneMap[Z_MAP_SLOTS];	
 	
 } SuperBlock;
 
@@ -109,13 +117,13 @@ typedef struct IndexNode {
 
 	u8 update;
 
-} MInode;
+} Inode;
 
 typedef struct DirectoryEntry {
 
 	u16 inode;
 
-	byte name[NAME_LEN];
+	byte name[NAME_LENGTH];
 
 } DirEntry;
 
@@ -127,10 +135,12 @@ typedef struct File {
 
 	u16 count;
 
-	MInode *inode;
+	Inode *inode;
 
 	u32 position;
 
 } File;
 
 void initFileSystem();
+
+Inode *getInode(int dev, int num);

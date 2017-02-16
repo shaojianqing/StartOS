@@ -20,7 +20,7 @@ extern int sys_close();
 
 extern int sys_waitpid();
 
-extern int sys_creat();
+extern int sys_create();
 
 extern int sys_link();
 

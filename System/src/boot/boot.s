@@ -40,8 +40,8 @@ blockNum:    dq 0
  
 times 446-($-$$) db 0
 	dd	0x0000040			;start sector of partition one
-	dd	0x0100000			;sector count of partition one
-	dd	0x0100040			;start sector of partition two
-	dd	0x1e00000			;sector count of partition two
+	dd	0x0007FC0			;sector count of partition one
+	dd	0x0008000			;start sector of partition two
+	dd	0x0008000			;sector count of partition two
 times 510-($-$$) db 0
 	db 0x55,0xaa

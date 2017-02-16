@@ -2,10 +2,14 @@
 #include "../const/const.h"
 #include "../error/error.h"
 #include "../system/descriptor.h"
+#include "../console/console.h"
 #include "../process/process.h"
 #include "../system/system.h"
-#include "filesys.h"
+
 #include "cache.h"
+#include "filesys.h"
+
+extern Console *console;
 
 int totalCacheSize = 0;
 
@@ -37,7 +41,7 @@ void initSystemCache() {
 		cacheData->isUptoDate = false;
 		cacheData->isDirty = false;
 		cacheData->count = 0;
-		cacheData->isLock = 0;
+		cacheData->isLock = false;
 		cacheData->waitProcess = NULL;
 		cacheData->prev = NULL;
 		cacheData->next = NULL;
@@ -61,15 +65,23 @@ CacheData *readBlock(int dev, int block) {
 	CacheData *cacheData = getCacheData(dev, block);
 	if (cacheData->isUptoDate) {
 		return cacheData;
-	} else {
+	} else {	
 		readDataBlock(cacheData);
 		cacheData->isUptoDate = true;
 	}
 	return cacheData;
 }
 
+void writeBlock(CacheData *cacheData) {
+	if (cacheData!=NULL) {
+		writeDataBlock(cacheData);	
+	}
+}
+
 void releaseBlock(CacheData *cacheData) {
-	
+	if (cacheData!=NULL && cacheData->count>0) {
+		cacheData->count--;
+	}
 }
 
 static inline void removeFromQueue(CacheData *cacheData) {
@@ -103,8 +115,8 @@ static inline void insertIntoQueue(CacheData *cacheData) {
 		cacheData->next = NULL;
 		
 		if (cacheData->device!=0) {
-			cacheHashTable[hashFunction(cacheData->device, cacheData->block)] = cacheData;	
 			CacheData *existCacheData = findCacheData(cacheData->device, cacheData->block);
+			cacheHashTable[hashFunction(cacheData->device, cacheData->block)] = cacheData;	
 			if (existCacheData!=NULL) {
 				cacheData->next = existCacheData;
 				existCacheData->prev = cacheData;
@@ -117,7 +129,7 @@ static CacheData *getCacheData(int device, int block) {
 	CacheData *cacheData = findCacheData(device, block);
 	if (cacheData==NULL) {
 		CacheData *temp = startFreeEntry;	
-		while (temp->nextFree!=startFreeEntry) {
+		while (temp!=NULL && temp->nextFree!=startFreeEntry) {
 			if (temp->count==0) {
 				if (cacheData==NULL || BADNESS(temp)<BADNESS(cacheData)) {
 					cacheData = temp;
@@ -180,7 +192,6 @@ static CacheData* getCacheInHashTable(int device, int block) {
 		}
 	}
 }
-
 
 int sys_sync(void) {
 	return -ENOSYS;

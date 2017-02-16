@@ -20,7 +20,8 @@ stack:     Descriptor 0x00007e00, 0x00007e00,  DA_DRWA | DA_32      	;00011_000B
 gdt_size:  dw 0xFF
 gdt_base:  dd GDT_BASE
 
-enter_protect_mode:         
+enter_protect_mode:   
+      
 	;---------------GDT TABLE-----------------;
 	mov ax, 0x7e0
 	mov es, ax
@@ -30,6 +31,16 @@ enter_protect_mode:
 	mov ds, ax
 	mov si, gdt             
 	mov cx, 0x20
+	rep movsb
+
+	;------------------------;
+	mov	ax, 0x0000
+	mov	ds,	ax
+	lds	si,	[4*0x41]
+	mov	ax, 0x2140
+	mov	es, ax
+	mov	di, 0x00
+	mov	cx, 0x10
 	rep movsb
 
 	;------------------------;	

@@ -22,28 +22,32 @@ global setupInterruptHlt
 initPic:
     mov al, 0x11
     out 0x20, al
+
+	mov al, 0x20
+    out 0x21, al
+
+	mov al, 0x04
+    out 0x21, al
+
+	mov al, 0x01
+    out 0x21, al
+
+	mov al, 0x11
     out 0xa0, al
 
-    mov al, 0x20
-    out 0x21, al
-
-    mov al, 0x28
+	mov al, 0x28
     out 0xa1, al
 
-    mov al, 0x04
-    out 0x21, al
-
-    mov al, 0x02
+	mov al, 0x02
     out 0xa1, al
 
-    mov al, 0x01
-    out 0x21, al
+	mov al, 0x01
     out 0xa1, al
 
-    mov al, 11111000B
+    mov al, 0xf8
     out 0x21, al
 
-    mov al, 10101111B
+	mov al, 0xbf
     out 0xa1, al
 
     ret

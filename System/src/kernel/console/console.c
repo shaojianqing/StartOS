@@ -1,16 +1,23 @@
 #include "../const/const.h"
 #include "../type/type.h"
+#include "../string/string.h"
+#include "../keyboard/printer.h"
 #include "console.h"
+
+#define va_start(args, first_fix) args = (va_list)&first_fix
+#define va_end(args) args = NULL
 
 static void clear(Console *this);
 
 static void scrollScreen(Console *this);
 
+static void printInfo(const char* format, ...);
+
 static void printByte(Console *this, byte value, char color);
 
 static void putBinary(Console *this, byte data, char color);
 
-static void print(Console *this, char *message, char color);
+static void printString(Console *this, char *message, char color);
 
 static void printInteger(Console *this, u32 data, char color);
 
@@ -20,6 +27,8 @@ Console systemConsole;
 
 Console *console;
 
+char buf[1024] = {'s','d', 'm', 0};
+
 void initConsoleSetting() {
 	systemConsole.buffer = (byte *)VRAM_ADDRESS;
 	systemConsole.width = SCREEN_WIDTH;
@@ -27,14 +36,47 @@ void initConsoleSetting() {
 	systemConsole.currentX = 0;
 	systemConsole.currentY = 0;
 	systemConsole.clear = clear;
-	systemConsole.print = print;
+	systemConsole.printInfo = printInfo;
 	systemConsole.putBinary = putBinary;
+	systemConsole.printString = printString;
 	systemConsole.printInteger = printInteger;
 	systemConsole.scrollScreen = scrollScreen;
 	systemConsole.printByte = printByte;
 	systemConsole.putChar = putChar;
 	
 	console = &systemConsole;
+}
+
+static void printInfo(const char* format, ...) {
+	va_list args;
+	va_start(args, format);	       				   // 使args指向format
+	//char buf[1024] = {'s','d', 'm', 0};	       // 用于存储拼接后的字符串
+	//vsprintf(buf, format, args);
+	va_end(args);
+
+
+	systemConsole.printString(&systemConsole, buf, 11);
+}
+
+void printf(char* format) {
+
+	//char *args = (char *)(&format);
+
+	//char *arg_str = *((char *)(args += 4));
+
+	//char **buf = (char **)(&format);
+
+	//char *str = *buf;
+
+	//systemConsole.printInteger(&systemConsole, *buf, 11);
+
+	
+	/*va_list args;
+	va_start(args, format);	       // 使args指向format
+	//char buf[1024] = {'s','d', 'm', 0};	       // 用于存储拼接后的字符串
+	//vsprintf(buf, format, args);
+	va_end(args);*/
+
 }
 
 static void printByte(Console *this, byte value, char color) {
@@ -79,7 +121,7 @@ static void clear(Console *this) {
 	}
 }
 
-static void print(Console *this, char *message, char color) {
+static void printString(Console *this, char *message, char color) {
 	if (this!=NULL && message!=NULL) {
 		int i=0, start=this->currentY*SCREEN_WIDTH+this->currentX;
 		byte *buffer = (byte *)(this->buffer+start*2);

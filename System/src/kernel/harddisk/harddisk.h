@@ -1,16 +1,5 @@
-/* 
- * The LBA address transforming macro.
- *
- * Parameters:
- * 			lba: the lba address.
- *			drv: the device no.
- *	lba_highest: the sign of lba.
- * Return:
- *		the transformed address.
- */
-#define	MAKE_DEVICE_REG(lba,drv,lba_highest) (((lba) << 6) |		\
-					      ((drv) << 4) |		\
-					      (lba_highest & 0xF) | 0xA0)
+
+#define 	BIOS_ADDRESS				(4*0X41)					
 
 #define 	PARTITION_TABLE				(0x7c00+446)
 
@@ -38,7 +27,7 @@
 #define 	REG_LBA_HIGH	0x1F5
 #define 	REG_DEVICE		0x1F6
 #define 	REG_STATUS		0x1F7
-#define 	REG_CMD			REG_STATUS
+#define 	REG_COMMAND		REG_STATUS
 #define 	REG_DEV_CTRL	0x3F6
 #define 	REG_ALT_STATUS	REG_DEV_CTRL
 #define 	REG_DRV_ADDR	0x3F7
@@ -56,6 +45,13 @@
 #define		STATUS_IDX		0x02
 #define		STATUS_ERR		0x01
 
+#define 	BIT_DEV_MBS		0xa0	    // 第7位和第5位固定为1
+#define 	BIT_DEV_LBA		0x40
+#define 	BIT_DEV_DEV		0x10
+#define 	BIT_STAT_BSY	0x80	    // 硬盘忙
+#define 	BIT_STAT_DRDY	0x40	    // 驱动器准备好	 
+#define 	BIT_STAT_DRQ	0x8	      	// 数据传输准备好了
+
 typedef struct Partition {
 
 	u32 startSector;			/* starting sector counting from 0 */
@@ -64,6 +60,22 @@ typedef struct Partition {
 
 } Partition;
 
+typedef struct HarddiskInfo {
+
+	int head;
+
+	int sect;
+
+	int cyl;
+
+	int wpcom;
+
+	int lzone;
+
+	int ctl;
+
+} HarddiskInfo;
+
 typedef void (*HarddiskHandler)();
 
 void initHarddiskSetting();
@@ -71,3 +83,4 @@ void initHarddiskSetting();
 void readDataBlock(CacheData *cacheData);
 
 void writeDataBlock(CacheData *cacheData);
+

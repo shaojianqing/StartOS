@@ -1,4 +1,5 @@
 #include "../type/type.h"
+#include "../const/const.h"
 #include "../console/console.h"
 #include "memory.h"
 
@@ -45,5 +46,14 @@ void releasePage(u32 addr) {
 	data = ~data;
 
 	bitmap[position] = (bitmap[position] & data);	
+}
+
+void* memset(void *src, byte data, u32 count) {
+	if (src!=NULL && count>0) {
+		u32 i=0;
+		for (i=0;i<count;++i) {
+			*((byte *)(src+i)) = data;		
+		}
+	}
 }
 

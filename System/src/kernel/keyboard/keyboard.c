@@ -109,9 +109,9 @@ static char keymap[][2] = {
 /* 0x3A */	{capsLock, capsLock}
 };
 
-int block = 0;
+int block = 1;
 
-static void printHarddiskData();
+void printHarddiskData();
 
 void intKeyboardHandler()
 {
@@ -169,9 +169,22 @@ void intKeyboardHandler()
       u8 index = (data &= 0x00ff);
       char currentData = keymap[index][shift];
    
-      if (currentData) {	 
+      if (currentData) {
+			
+			//printHarddiskData();
+			
 			console->putChar(console, currentData, 11);
-		 return;
+
+			//char *name = "Smith";
+			//int time = 188;
+
+			//printf("I am message!! sender:%s, time:\n");
+
+			//console->printInfo("I am message!! sender:%s, time:\n", "Smith");
+
+			//printHarddiskData();
+
+			return;
       }
 
       if (data == ctrl_l_make || data == ctrl_r_make) {
@@ -186,16 +199,18 @@ void intKeyboardHandler()
    }
 }
 
-static void printHarddiskData() {
-	if (block<2) {
+void printHarddiskData() {
 
-		CacheData *cacheData = readBlock(0, block);
-
-		u8 *buffer = cacheData->data;
-
-		*(buffer+32) = 0;
-		console->print(console, buffer, 9);
-
-		block++;
+	if (block==1) {
+		block=0;
+	} else if (block==0) {
+		block = 1;	
 	}
+
+	CacheData *cacheData = readBlock(1, 16*1024+block);
+
+	u8 *buffer = cacheData->data;
+
+	*(buffer+32) = 0;
+	console->printString(console, buffer, 9);
 }

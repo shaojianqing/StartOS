@@ -11,29 +11,21 @@
 
 extern Console *console;
 
+HarddiskInfo hardDiskInfo;
+
 u32 partitionCount = DEFAULT_PARTITION_COUNT;
 
 Partition partitionTable[DEFAULT_PARTITION_COUNT];
 
-typedef struct Command
-{
-    u8 features;
-	
-	u8 count;
+static inline void insw(u16 port, byte* buffer, u32 dataCount) {
+   asm volatile ("cld; rep insw" : "+D" (buffer), "+c" (dataCount) : "d" (port) : "memory");
+}
 
-	u8 lbaLow;
+static inline void outsw(u16 port, const byte* buffer, u32 dataCount) {
+   asm volatile ("cld; rep outsw" : "+S" (buffer), "+c" (dataCount) : "d" (port));
+}
 
-	u8 lbaMid;
-
-	u8 lbaHigh;
-
-	u8 device;
-
-	u8 command;
-
-} Command;
-
-Command command;
+static void resetController();
 
 static void doHarddiskRequest();
 
@@ -47,6 +39,17 @@ void initHarddiskSetting() {
 		++i;
 	}
 	partitionCount = i;
+
+	byte *BIOS = (byte *)BIOS_ADDRESS;
+	hardDiskInfo.cyl = *(u16 *) BIOS;
+	hardDiskInfo.head = *(u8 *) (2+BIOS);
+	hardDiskInfo.wpcom = *(u16 *) (5+BIOS);
+	hardDiskInfo.ctl = *(u8 *) (8+BIOS);
+	hardDiskInfo.lzone = *(u16 *) (12+BIOS);
+	hardDiskInfo.sect = *(u8 *) (14+BIOS);
+
+	outByte(0x21, inByte(0x21)&0xfb);
+	outByte(0xA1, inByte(0xA1)&0xbf);
 }
 
 int sys_setup() {
@@ -54,84 +57,105 @@ int sys_setup() {
 }
 
 void intHarddiskHandler() {
-	inByte(REG_STATUS);
 	outByte(0x20, 0xA0);
 	outByte(0x20, 0x20);
-	return;
+	inByte(REG_STATUS);
 }
 
-bool waitForStatus(int mask, int val, int timeout) 
-{
+static void selectHardDisk() {
+   outByte(REG_DEVICE, (BIT_DEV_MBS|BIT_DEV_LBA));
+}
+
+static void selectSector(u32 sectorLba, u32 sectorCount) {
+	outByte(REG_NSECTOR, sectorCount);
+	outByte(REG_LBA_LOW, (sectorLba & 0xFF));
+	outByte(REG_LBA_MID, ((sectorLba >>  8) & 0xFF));
+	outByte(REG_LBA_HIGH, ((sectorLba >> 16) & 0xFF));
+	outByte(REG_DEVICE, (BIT_DEV_MBS | BIT_DEV_LBA | sectorLba>>24));
+}
+
+static void sendCommand(u8 command) {
+	outByte(REG_COMMAND, command);
+}
+
+static void readFromSector(byte* buffer, u8 sectCount) {
+	u32 size = 0;
+	if (sectCount==0) {
+		size = 256*512;	
+	} else {
+		size = sectCount*512;
+	}
+	insw(REG_DATA, buffer, size/2);	
+}
+
+static bool waitStatus(int timeout) {
 	long long time = getSystemTiming();
-	while((getSystemTiming() - time)<timeout) {
-		if ((inByte(REG_STATUS) & mask) == val)	{
-			return true;	
+	while(getSystemTiming() - time<timeout) {
+		if (!(inByte(REG_STATUS) & BIT_STAT_BSY))	{
+			return (inByte(REG_STATUS) & BIT_STAT_DRQ);
 		}
 	}
 	return false;
 }
 
-bool sendCommand(Command *command)
-{
-	if (waitForStatus(STATUS_BSY, 0, HD_TIMEOUT) == true) {
-		outByte(REG_DEV_CTRL, 0);
-		outByte(REG_FEATURES, command->features);
-		outByte(REG_NSECTOR, command->count);
-		outByte(REG_LBA_LOW, command->lbaLow);
-		outByte(REG_LBA_MID, command->lbaMid);
-		outByte(REG_LBA_HIGH, command->lbaHigh);
-		outByte(REG_DEVICE, command->device);
-		outByte(REG_CMD, command->command);
+void readHardDisk(u32 lba, byte* buffer, u32 sectorCount) {   
 
-		return true;
-	} else {
-		return false;	
-	}
-}
+   selectHardDisk();
 
-void readHardSector(u32 sector, u8 *buffer, int sectorCount, int size)
-{
-  	command.features = 0;
-	command.count = sectorCount;
-	command.lbaLow	= sector & 0xFF;
-	command.lbaMid	= (sector >>  8) & 0xFF;
-	command.lbaHigh	= (sector >> 16) & 0xFF;
+   u32 sectorOperate;
+   u32 sectorDone = 0;
+   while(sectorDone < sectorCount) {
+      if ((sectorDone + 256) <= sectorCount) {
+	        sectorOperate = 256;
+      } else {
+	        sectorOperate = sectorCount - sectorDone;
+      }
+      selectSector(lba + sectorDone, sectorOperate);
+      sendCommand(ATA_READ);
 
-	command.device = MAKE_DEVICE_REG(1, 0, (sector >> 24) & 0xF);
-	command.command = ATA_READ;
-	
-	sendCommand(&command);
-	int sectorLeft = command.count;
-	while (sectorLeft>0 && size>0) {
-		u32 sectorSize = (size<512?size:512);	
-		waitForStatus(STATUS_BSY, 0, HD_TIMEOUT);
-		readPort(REG_DATA, buffer, sectorSize);
-		buffer+=512;
-		sectorLeft--;
-	}
-}
-
-void readHardDisk(u32 sector, u8 *buffer, int size)
-{
-	while (size>0) {
-		int sectorCount = (size/512)>255?255:(size/512+1);
-		readHardSector(sector, buffer, sectorCount, size);
-		sector += sectorCount;
-		buffer += sectorCount*512;
-		size -= sectorCount*512;
-	}
+      if (waitStatus(10000)) {
+		 readFromSector(buffer+sectorDone*512, sectorOperate);
+		 sectorDone += sectorOperate;
+      }
+   }
 }
 
 void readDataBlock(CacheData *cacheData) {	
-	readHardDisk(cacheData->block*2, cacheData->data, BLOCK_SIZE);
+	readHardDisk(cacheData->block*2, cacheData->data, 2);
+}
+
+static void writeToSector(byte *buffer, u8 sectCount) {
+   u32 size = 0;
+   if (sectCount == 0) {
+      size = 256*512;
+   } else { 
+      size = sectCount*512; 
+   }
+   outsw(REG_DATA, buffer, size/2);
+}
+
+void writeHardDisk(u32 lba, byte* buffer, u32 sectorCount) {
+	
+	selectHardDisk();
+
+	u32 sectorOperate;
+	u32 sectorDone = 0;
+	while(sectorDone < sectorCount) {
+		if ((sectorDone + 256) <= sectorCount) {
+			sectorOperate = 256;
+		} else {
+			sectorOperate = sectorCount - sectorDone;
+		}
+		selectSector(lba + sectorDone, sectorOperate);
+		sendCommand(ATA_WRITE);
+		
+		if (waitStatus(10000)) {
+			writeToSector(buffer+sectorDone*512, sectorOperate);
+			sectorDone += sectorOperate;
+		}
+	}
 }
 
 void writeDataBlock(CacheData *cacheData) {
-	
+	writeHardDisk(cacheData->block*2, cacheData->data, 2);
 }
-
-void doHarddiskRequest() {
-	
-}
-
-

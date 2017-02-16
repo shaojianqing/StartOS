@@ -14,7 +14,7 @@
 
 #define BLOCK_SIZE			1024
 
-#define BADNESS(cacheData) (((cacheData)->isDirty<<1)+(cacheData)->isLock)
+#define BADNESS(cacheData) 	(((cacheData)->isDirty<<1)+(cacheData)->isLock)
 
 typedef struct CacheData CacheData;
 
@@ -50,3 +50,5 @@ void initSystemCache();
 CacheData *readBlock(int dev, int block);
 
 void releaseBlock(CacheData *cacheData);
+
+void writeBlock(CacheData *cacheData);

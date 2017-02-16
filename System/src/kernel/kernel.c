@@ -6,7 +6,6 @@
 #include "filesys/cache.h"
 #include "console/console.h"
 #include "system/interrupt.h"
-#include "ramdisk/ramdisk.h"
 #include "harddisk/harddisk.h"
 #include "interface/interface.h"
 
@@ -19,14 +18,17 @@ void initSystem(void)
 	initMemorySetting();
 	initTimingFacility();
 	initConsoleSetting();
-	initRamdiskSetting();
 	initHarddiskSetting();
 	initSystemInterface();
 	initInterruptHandler();
 	initFileSystem();
 	setupInterrupt();
 
-	console->print(console, "shaojianqing", 13);
+	console->printString(console, "[shaojianqing@StartOS]", 15);
+
+	//printHarddiskData();
+
+	//printHarddiskData();
 
 	/*byte *area0 = (byte *)allocatePage();
 	byte *area1 = (byte *)allocatePage();
@@ -55,7 +57,5 @@ void initSystem(void)
 
 	while(true) {
 
-		
-		
 	}
 }

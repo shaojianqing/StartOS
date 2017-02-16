@@ -12,7 +12,7 @@ AS = nasm
 ELFFLAGES = -f elf 
 
 # The C file compiling flages #
-CCFLAGES = -c -m32
+CCFLAGES = -c -m32 -O0 -fno-builtin
 
 # The target file linking flages #
 LDFLAGES = -m elf_i386 -s -Ttext
@@ -48,7 +48,7 @@ TARGET = System.vhd
 
 DISK = System.vhd
 
-DATA = data.text
+IMAGE = Image.bin
 
 #Booter Target#
 BOOT = tgt/boot.bin
@@ -74,9 +74,6 @@ KEYBOARDOBJS = tgt/keyboarda.o tgt/keyboardc.o
 #Harddisk Object#
 HARDDISKOBJS = tgt/harddiska.o tgt/harddiskc.o
 
-#Ramdisk Object#
-RAMDISKOBJS = tgt/ramdisk.o
-
 #Console Object#
 CONSOLEOBJS = tgt/console.o 
 
@@ -88,6 +85,12 @@ DATAOBJS = tgt/data.o
 
 #Cache Object#
 CACHEOBJS = tgt/cache.o
+
+#String Object#
+STRINGOBJS = tgt/string.o
+
+#Stat Object#
+PRINTEROBJS = tgt/printer.o
 
 #Stat Object#
 STATOBJS = tgt/stat.o
@@ -120,7 +123,7 @@ FILESYSOBJS = tgt/filesysa.o tgt/filesysc.o
 BLOCKOBJS = tgt/block.o
 
 #Printer Object#
-PRINTEROBJS = tgt/printer.o
+PRINTEROBJS = tgt/printerc.o tgt/printera.o
 
 #Kernel Target#
 KERNEL = tgt/kernel.sys
@@ -181,9 +184,6 @@ tgt/harddiska.o : src/kernel/harddisk/harddisk.s
 tgt/harddiskc.o : src/kernel/harddisk/harddisk.c src/kernel/harddisk/harddisk.h
 	$(CC) $(CCFLAGES) $< -o $@
 
-tgt/ramdisk.o : src/kernel/ramdisk/ramdisk.c src/kernel/ramdisk/ramdisk.h
-	$(CC) $(CCFLAGES) $< -o $@
-
 tgt/filesystem.o : src/kernel/filesys/filesys.c src/kernel/filesys/filesys.h
 	$(CC) $(CCFLAGES) $< -o $@
 
@@ -217,6 +217,12 @@ tgt/memory.o : src/kernel/memory/memory.c src/kernel/memory/memory.h
 tgt/block.o : src/kernel/filesys/block.c src/kernel/filesys/block.h
 	$(CC) $(CCFLAGES) $< -o $@
 
+tgt/string.o : src/kernel/string/string.c src/kernel/string/string.h
+	$(CC) $(CCFLAGES) $< -o $@
+
+tgt/printerc.o : src/kernel/keyboard/printer.c src/kernel/keyboard/printer.h
+	$(CC) $(CCFLAGES) $< -o $@
+
 tgt/filesysa.o : src/kernel/library/filesys.s
 	$(AS) $(ELFFLAGES) $< -o $@
 
@@ -230,7 +236,7 @@ tgt/interfacea.o : src/kernel/interface/interface.s
 tgt/filesysc.o : src/kernel/library/filesys.c src/kernel/library/filesys.h
 	$(CC) $(CCFLAGES) $< -o $@
 
-tgt/printer.o : src/kernel/keyboard/printer.s
+tgt/printera.o : src/kernel/keyboard/printer.s
 	$(AS) $(ELFFLAGES) $< -o $@
 
 #---------------------------------------------------------------#
@@ -244,8 +250,8 @@ tgt/ka.o : src/kernel/kernel.s
 tgt/kc.o : src/kernel/kernel.c
 	$(CC) $(CCFLAGES) $< -o $@
 
-tgt/kernel.bin : $(KERNELOBJS) $(SYSTEM) $(DESCRIPTOR) $(INTERRUPTOBJS) $(TIMINGOBJS) $(KEYBOARDOBJS) $(HARDDISKOBJS) $(INTERFACEOBJS) $(FILESYSOBJS) $(FILESYSTEMOBJS) $(NAMEIOBJS) $(DATAOBJS) $(PIPEOBJS) $(PROCESSOBJS) $(CACHEOBJS) $(STATOBJS) $(BLOCKOBJS) $(RAMDISKOBJS) $(CHARSETOBJS) $(CONSOLEOBJS) $(MEMORYOBJS) $(PRINTEROBJS)
-	$(LD) $(LDFLAGES) $(KERNELSTART) $(KERNELOBJS) $(SYSTEM) $(DESCRIPTOR) $(INTERRUPTOBJS) $(TIMINGOBJS) $(KEYBOARDOBJS) $(HARDDISKOBJS) $(INTERFACEOBJS) $(FILESYSOBJS) $(FILESYSTEMOBJS) $(NAMEIOBJS) $(DATAOBJS) $(PIPEOBJS) $(PROCESSOBJS) $(CACHEOBJS) $(STATOBJS) $(BLOCKOBJS) $(RAMDISKOBJS) $(CHARSETOBJS) $(CONSOLEOBJS) $(MEMORYOBJS) $(PRINTEROBJS) -o $@
+tgt/kernel.bin : $(KERNELOBJS) $(SYSTEM) $(DESCRIPTOR) $(INTERRUPTOBJS) $(TIMINGOBJS) $(KEYBOARDOBJS) $(HARDDISKOBJS) $(INTERFACEOBJS) $(FILESYSOBJS) $(FILESYSTEMOBJS) $(NAMEIOBJS) $(DATAOBJS) $(PIPEOBJS) $(PROCESSOBJS) $(CACHEOBJS) $(STATOBJS) $(BLOCKOBJS) $(CHARSETOBJS) $(CONSOLEOBJS) $(MEMORYOBJS) $(PRINTEROBJS) $(STRINGOBJS)
+	$(LD) $(LDFLAGES) $(KERNELSTART) $(KERNELOBJS) $(SYSTEM) $(DESCRIPTOR) $(INTERRUPTOBJS) $(TIMINGOBJS) $(KEYBOARDOBJS) $(HARDDISKOBJS) $(INTERFACEOBJS) $(FILESYSOBJS) $(FILESYSTEMOBJS) $(NAMEIOBJS) $(DATAOBJS) $(PIPEOBJS) $(PROCESSOBJS) $(CACHEOBJS) $(STATOBJS) $(BLOCKOBJS) $(CHARSETOBJS) $(CONSOLEOBJS) $(MEMORYOBJS) $(PRINTEROBJS) $(STRINGOBJS) -o $@
 
 tgt/kernel.sys : $(KERNELBIN)
 	$(TRIMELFHEADER) $< $@
@@ -256,4 +262,6 @@ System.vhd : tgt/boot.bin tgt/loader.bin tgt/kernel.sys
 	$(IMAGETOOL) $(COPYBINARY) $@ $(BOOT) 0					
 	$(IMAGETOOL) $(COPYBINARY) $@ $(LOADER) 512
 	$(IMAGETOOL) $(COPYBINARY) $@ $(KERNEL) 9216
+	$(IMAGETOOL) $(COPYBINARY) $@ $(IMAGE) 16777216
+
 	$(RUN-SYSTEM)

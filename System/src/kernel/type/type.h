@@ -29,6 +29,11 @@ typedef unsigned int u32;
 typedef unsigned long u64;
 
 /*
+ * Definition of char* type;
+ */
+typedef char* va_list;
+
+/*
  * Definition of Object type, 
  * this type is used to point 
  * to any kind of pointer;
